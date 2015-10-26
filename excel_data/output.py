@@ -1,23 +1,16 @@
 from xlwt import Workbook
+# create workbook in separate module, feed that workbook to this function!!!!!
+def write_data_noSpeed(BOOK, SHEET, SHEETNAME, PRACTICE, subject_num, scoreNoSpeed, levelNoSpeed, enjoyNoSpeed, timeNoSpeed):
 
-def write_data_noSpeed(subject_num, scoreNoSpeed, levelNoSpeed, enjoyNoSpeed):
+    row = PRACTICE-2
 
-    book = Workbook()
-    sheetName = 'subject_%d_raw_data.xls'%subject_num
-    sheet1 = book.add_sheet(sheetName)
-
-    def setDataLabels():
-        sheet1.write(0, 0, "overallSkill")
-        sheet1.write(0, 1, "scoreNoSpeed")
-        sheet1.write(0, 2, "levelNoSpeed")
-        sheet1.write(0, 3, "enjoyNoSpeed")
-
-    def setData(scoreNoSpeed, levelNoSpeed, enjoyNoSpeed):
-        sheet1.write(1, 1, scoreNoSpeed)
-        sheet1.write(1, 2, levelNoSpeed)
-        sheet1.write(1, 3, enjoyNoSpeed)
+    def setData(scoreNoSpeed, levelNoSpeed, enjoyNoSpeed, timeNoSpeed):
+        SHEET.write(row, 0, row)
+        SHEET.write(row, 2, scoreNoSpeed)
+        SHEET.write(row, 3, levelNoSpeed)
+        SHEET.write(row, 4, enjoyNoSpeed)
+        SHEET.write(row, 5, timeNoSpeed)
     
-    setDataLabels()
-    setData(scoreNoSpeed, levelNoSpeed, enjoyNoSpeed) 
-    book.save(sheetName)
+    setData(scoreNoSpeed, levelNoSpeed, enjoyNoSpeed, timeNoSpeed) 
+    BOOK.save(SHEETNAME)
 

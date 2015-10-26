@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 """
 Tetris Tk - A tetris clone written in Python using the Tkinter GUI library.
 
@@ -17,7 +18,11 @@ TODO: timer from sys time, offset, endtime-starttime
 from Tkinter import *
 from time import sleep
 from random import randint
+import time
 import excel_data.output
+import excel_data.make_workbook
+import excel_data.survey_ans
+import survey.survey
 import tkSimpleDialog
 import tkMessageBox
 import sys
@@ -33,8 +38,16 @@ LEFT = "left"
 RIGHT = "right"
 DOWN = "down"
 
-direction_d = { "left": (-1, 0), "right": (1, 0), "down": (0, 1) }
+PRACTICE = 0 #USE THIS TO DETERMINE GAME STATE
+             # 0-2 is for practice
+             # 3 is for normal
+             # 4 is for points rate
+             # 5 is for time cap
+             # 6 is for speeded
+SUBJECT_NUM = 627  # CHANGE THIS FOR EVERY SUBJECT- format by birth month, birthday
 
+direction_d = { "left": (-1, 0), "right": (1, 0), "down": (0, 1) }
+(BOOK, SHEET, SHEETNAME) = excel_data.make_workbook.make_workbook(SUBJECT_NUM)
 
 def level_thresholds( first_level, no_of_levels ):
     """
@@ -128,6 +141,14 @@ class Board( Frame ):
 
                     break;
 
+                    break;
+
+                    break;
+
+                    break;
+
+                    break;
+
             if complete_row:
                 rows_deleted += 1
                 
@@ -158,8 +179,11 @@ class Board( Frame ):
                 
         #self.output() # non-gui diagnostic
         
-        # return the score, calculated by the number of rows deleted.        
-        return (100 * rows_deleted) * rows_deleted
+        # return the score, calculated by the number of rows deleted.  
+        if PRACTICE == 4:
+            return (500 * rows_deleted) * rows_deleted # this happens only on the 5th session
+        else:      
+            return (100 * rows_deleted) * rows_deleted ### CHANGE THIS NUMBER TO INCREASE POINTS RATE- done and done
                 
     def output( self ):
         for y in xrange(self.max_y):
@@ -403,14 +427,14 @@ class game_controller(object):
         """
         Intialise the game...
         """
-        subject = tkSimpleDialog.askinteger(title="Subject Number",prompt="Enter your birthday in the format mmdd, ex: 672 for June 26th.")
-        self.subject_num = subject
+
         self.parent = parent
         self.score = 0
         self.level = 0  #dependent on self.level, increase speed (make new file for this)
-        self.delay = 1000    #ms
-        self.time = 0 #use to track playtime
-        
+        self.delay = 1000    #ms   # this lil piece of shit is the delay betwn piece moves (so, speed)
+        self.starttime = time.time() #use to track playtime
+        self.endtime = 0
+        self.totaltime = 0
         #lookup table
         self.shapes = [square_shape,
                       t_shape,
@@ -451,11 +475,56 @@ class game_controller(object):
         self.shape = self.get_next_shape()
         #self.board.output()
         self.after_id = self.parent.after( self.delay, self.move_my_shape )
-        
+
+    def endGame(self):
+        self.endtime = time.time()
+        self.totaltime = self.endtime - self.starttime
+        global PRACTICE
+        PRACTICE += 1
+        #print(PRACTICE)
+        self.checkPractice()
+        Toplevel().destroy()
+        self.parent.destroy()
+        if PRACTICE == 7:
+            sys.exit()
+        root = Tk()
+        root.title("Tetris Tk")
+        theGame = game_controller(root)
+        root.mainloop()
+
+    def checkPractice(self):
+        global PRACTICE
+        if PRACTICE >= 3:
+            self.checkIn()
+        pass
+
+    def writeData(self, BOOK, SHEET, SHEETNAME, PRACTICE): #TODO: change this to use practice as an arg and translate that to the row # to write to
+        scoreNoSpeed = self.score
+        levelNoSpeed = self.level
+        timeNoSpeed = self.totaltime
+        enjoyNoSpeed = self.enjoyNoSpeed
+        subject_num = SUBJECT_NUM
+        excel_data.output.write_data_noSpeed(BOOK, SHEET, SHEETNAME, PRACTICE, subject_num, scoreNoSpeed,
+                                             levelNoSpeed, enjoyNoSpeed, timeNoSpeed)
+
+    def checkIn(self):
+        tkMessageBox.showwarning(title="SESSION ENDED",
+                                 message ="Score: %7d\tLevel: %d\n Ready to move on?" % ( self.score, self.level),
+                           parent=self.parent)
+        self.enjoyNoSpeed = tkSimpleDialog.askinteger(title='Question', prompt="On a scale from 1 to 7 with 1 being not enjoyable at all, and 7 being as enjoyable as possible, how fun was this?")
+        survey_ans = survey.survey.survey()
+        self.writeData(BOOK, SHEET,SHEETNAME, PRACTICE)
+        excel_data.survey_ans.write_survey_ans(BOOK, SHEET, SHEETNAME, survey_ans, PRACTICE)
+
+
     def handle_move(self, direction):
+        #this lil bit only for time capped trial
+        if PRACTICE == 5:
+            if time.time()-self.starttime >= 300:
+                self.endGame()
         #if you can't move then you've hit something
         if not self.shape.move( direction ):
-            
+ 
             # if your heading down then the shape has 'landed'
             if direction == DOWN:
                 self.score += self.board.check_for_complete_row(
@@ -468,13 +537,15 @@ class game_controller(object):
                 # that the check before creating it failed and the
                 # game is over!
                 if self.shape is None:
-                    endGame(self)
+                   self.endGame()
                 # do we go up a level?
                 if (self.level < NO_OF_LEVELS and 
                     self.score >= self.thresholds[ self.level]):
                     self.level+=1
-                    self.delay-=100
-                    
+                    if PRACTICE == 6:
+                        #print("WE'RE SPEEDIN' UP")
+                        self.delay-=100 #HERE HE IS RIGHT HERE LIL SHIT I FOUND U
+                   
                 self.status_bar.set("Score: %-7d\t Level: %d " % (
                     self.score, self.level+1)
                 )
@@ -483,34 +554,9 @@ class game_controller(object):
                 return False
         return True
     
-    def endGame(self):
-        checkPractice(self)
-        Toplevel().destroy()
-        self.parent.destroy()
-        sys.exit(0)
-        return(enjoyNoSpeed, scoreNoSpeed, levelNoSpeed)
     
-    def checkPractice(self):
-        if practice == False:
-            checkIn(self)
 
-    def checkIn(self):
-        tkMessageBox.showwarning(title="SESSION ENDED",
-                                 message ="Score: %7d\tLevel: %d\n Ready to move on?" % ( self.score, self.level),
-                           parent=self.parent)
-        enjoyNoSpeed = tkSimpleDialog.askinteger(title='Question', prompt='On a scale from 1 to 7, how fun was this?')
-        writeData(self, enjoyNoSpeed)
-
-    def writeData(self, enjoyNoSpeed):
-        subject_num = self.subject_num
-        scoreNoSpeed = self.score
-        levelNoSpeed = self.level
-        excel_data.output.write_data_noSpeed(subject_num, scoreNoSpeed, 
-                                             levelNoSpeed, enjoyNoSpeed)
-                        
-                
-
-    def left_callback( self, event ):
+    def left_callback(self, event):
         if self.shape:
             self.handle_move( LEFT )
         
@@ -540,20 +586,24 @@ class game_controller(object):
         self.parent.after_cancel( self.after_id )
         tkMessageBox.askquestion(
             title = "Paused!",
-            message="Continue?",
+            message = "Continue?",
             type=tkMessageBox.OK)
-        self.after_id = self.parent.after( self.delay, self.move_my_shape )
-    
-    def move_my_shape( self ):
+        self.after_id = self.parent.after(self.delay,
+                                          self.move_my_shape)
+    def move_my_shape(self):
         if self.shape:
-            self.handle_move( DOWN )
-            self.after_id = self.parent.after( self.delay, self.move_my_shape )
-        
-    def get_next_shape( self ):
+            self.handle_move(DOWN)
+            self.after_id = self.parent.after(self.delay, self.move_my_shape)# i think mayhaps if I change the delay? it will speed up?
+
+    def get_next_shape(self):
         """
-        Randomly select which tetrominoe will be used next.
+        Randomly select which teromino will be used next.
         """
-        the_shape = self.shapes[ randint(0,len(self.shapes)-1) ]
+        the_shape = self.shapes[randint(0, len(self.shapes)-1)]
         return the_shape.check_and_create(self.board)
-        
+
+if __name__ == "__main__":
+    root = Tk()
+    root.title("Tetris Tk")
+    theGame = game_controller(root)
     root.mainloop()
