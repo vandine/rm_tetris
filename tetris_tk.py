@@ -39,12 +39,17 @@ RIGHT = "right"
 DOWN = "down"
 
 PRACTICE = 0 #USE THIS TO DETERMINE GAME STATE
-             # 0-2 is for practice
-             # 3 is for normal
-             # 4 is for points rate
-             # 5 is for time cap
-             # 6 is for speeded
-SUBJECT_NUM = 627  # CHANGE THIS FOR EVERY SUBJECT- format by birth month, birthday
+             # take [PRACTICE]list
+
+#index into these by PRACTICE in order to deternine which conditions are being used
+STATE1 = [1, 2, 3, 4, 5, 6]
+STATE2 = [1, 5, 2, 3, 4, 6]
+STATE3 = [1, 4, 5, 2, 3, 6]
+STATE4 = [1, 3, 4, 5, 3, 6]
+
+LIST= STATE1
+
+SUBJECT_NUM = 118.1  # CHANGE THIS FOR EVERY SUBJECT- format by birth month, birthday, decimal, state i.e.: 627.1
 
 direction_d = { "left": (-1, 0), "right": (1, 0), "down": (0, 1) }
 (BOOK, SHEET, SHEETNAME) = excel_data.make_workbook.make_workbook(SUBJECT_NUM)
@@ -180,8 +185,8 @@ class Board( Frame ):
         #self.output() # non-gui diagnostic
         
         # return the score, calculated by the number of rows deleted.  
-        if PRACTICE == 4:
-            return (500 * rows_deleted) * rows_deleted # this happens only on the 5th session
+        if LIST[PRACTICE] == 3:
+            return (500 * rows_deleted) * rows_deleted # this happens only on the 3th session
         else:      
             return (100 * rows_deleted) * rows_deleted ### CHANGE THIS NUMBER TO INCREASE POINTS RATE- done and done
                 
@@ -485,7 +490,7 @@ class game_controller(object):
         self.checkPractice()
         Toplevel().destroy()
         self.parent.destroy()
-        if PRACTICE == 7:
+        if LIST[PRACTICE] == 6:
             sys.exit()
         root = Tk()
         root.title("Tetris Tk")
@@ -494,9 +499,7 @@ class game_controller(object):
 
     def checkPractice(self):
         global PRACTICE
-        if PRACTICE >= 3:
-            self.checkIn()
-        pass
+        self.checkIn()
 
     def writeData(self, BOOK, SHEET, SHEETNAME, PRACTICE): #TODO: change this to use practice as an arg and translate that to the row # to write to
         scoreNoSpeed = self.score
@@ -519,8 +522,8 @@ class game_controller(object):
 
     def handle_move(self, direction):
         #this lil bit only for time capped trial
-        if PRACTICE == 5:
-            if time.time()-self.starttime >= 300:
+        if LIST[PRACTICE] == 4:
+            if time.time()-self.starttime >= 120: #let play go for two minutes
                 self.endGame()
         #if you can't move then you've hit something
         if not self.shape.move( direction ):
@@ -542,7 +545,7 @@ class game_controller(object):
                 if (self.level < NO_OF_LEVELS and 
                     self.score >= self.thresholds[ self.level]):
                     self.level+=1
-                    if PRACTICE == 6:
+                    if LIST[PRACTICE] == 5:
                         #print("WE'RE SPEEDIN' UP")
                         self.delay-=100 #HERE HE IS RIGHT HERE LIL SHIT I FOUND U
                    

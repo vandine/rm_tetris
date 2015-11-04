@@ -2,7 +2,7 @@ from xlwt import Workbook
 # create workbook in separate module, feed that workbook to this function!!!!!
 def write_data_noSpeed(BOOK, SHEET, SHEETNAME, PRACTICE, subject_num, scoreNoSpeed, levelNoSpeed, enjoyNoSpeed, timeNoSpeed):
 
-    row = PRACTICE-2
+    row = PRACTICE+1
 
     def setData(scoreNoSpeed, levelNoSpeed, enjoyNoSpeed, timeNoSpeed):
         SHEET.write(row, 0, row)

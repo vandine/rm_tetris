@@ -4,7 +4,7 @@ import tkMessageBox
 import sys
 
 def survey():
-    tkMessageBox.showwarning(title="SURVEY", message="Please rate each of the following statements on a scale from 1 to 7, with 1 being absolutely not, and 7 being absolutely yes.")
+    tkMessageBox.showwarning(title="SURVEY", message="Please rate each of the following statements on a scale from 1 to 7, with 1 being absolutely not, and 7 being absolutely yes.\n [1    2    3   4   5   6   7]\n[no||prob no||maybe no||maybe yes||prob ye||yes]")
 
     one = tkSimpleDialog.askinteger(title="enjoyment", prompt="I enjoyed playing Tetris.")
     
