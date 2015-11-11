@@ -124,7 +124,7 @@ class Board( Frame ):
 
     """
 
-    def __init__(self, parent, scale=20, max_x=10, max_y=20, offset=3):
+    def __init__(self, parent, scale=20, max_x=10, max_y=20, offset=3, fill="grey"):
 
         """
 
@@ -165,9 +165,9 @@ class Board( Frame ):
                              height=(max_y * scale)+offset,
 
                              width= (max_x * scale)+offset)
-
+        self.canvas = Canvas(parent, height=900, width=1440)
         self.canvas.pack()
-
+        self.canvas.create_rectangle(600, 80, 805, 545, fill="grey")
 
 
     def check_for_complete_row( self, blocks ):

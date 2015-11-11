@@ -1,6 +1,6 @@
 from xlwt import Workbook
 
-def make_workbook(subject_num):
+def make_workbook(subject_num, version):
     book = Workbook()
     sheetName = 'subject_%d_raw_data.xls' %(subject_num)
     main_sheet = book.add_sheet(sheetName)
@@ -16,5 +16,7 @@ def make_workbook(subject_num):
     main_sheet.write(0, 9, "trial 3")
     main_sheet.write(0, 10,"trial 4")
     main_sheet.write(0, 11,"trial 5")
+    main_sheet.write(0, 14, "version")
+    main_sheet.write(1, 14, version)
 
     return(book, main_sheet, sheetName)

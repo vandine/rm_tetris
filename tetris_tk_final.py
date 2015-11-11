@@ -38,21 +38,22 @@ LEFT = "left"
 RIGHT = "right"
 DOWN = "down"
 
-PRACTICE = 0 #USE THIS TO DETERMINE GAME STATE
-             # take [PRACTICE]list
+SESSION = 0 #USE THIS TO DETERMINE GAME STATE
+             # take [SESSION]list
 
-#index into these by PRACTICE in order to deternine which conditions are being used
+#index into these by SESSION in order to deternine which conditions are being used
 STATE1 = [1, 2, 3, 4, 5, 6]
 STATE2 = [1, 5, 2, 3, 4, 6]
 STATE3 = [1, 4, 5, 2, 3, 6]
 STATE4 = [1, 3, 4, 5, 3, 6]
 
-LIST= STATE1
+LIST= STATE2 #### CHANGE THIS TO DIFFERENT STATE FOR COUNTERBALANCING
+STRING_LIST= "STATE2"  ### DONT FORGET TO CHANGE THIS TOO
 
-SUBJECT_NUM = 914.1  # CHANGE THIS FOR EVERY SUBJECT- format by birth month, birthday, decimal, state i.e.: 627.1
+SUBJECT_NUM = 420.4  # CHANGE THIS FOR EVERY SUBJECT- format by birth month, birthday, decimal, state i.e.: 627.1
 
 direction_d = { "left": (-1, 0), "right": (1, 0), "down": (0, 1) }
-(BOOK, SHEET, SHEETNAME) = excel_data.make_workbook.make_workbook(SUBJECT_NUM)
+(BOOK, SHEET, SHEETNAME) = excel_data.make_workbook.make_workbook(SUBJECT_NUM, STRING_LIST)
 
 def level_thresholds( first_level, no_of_levels ):
     """
@@ -83,34 +84,53 @@ class status_bar( Frame ):
         self.label.update_idletasks()
 
 class Board( Frame ):
+
     """
+
     The board represents the tetris playing area. A grid of x by y blocks.
+
     """
+    
     def __init__(self, parent, scale=20, max_x=10, max_y=20, offset=3, fill = "grey"):
+
+
         """
+
         Init and config the tetris board, default configuration:
+
         Scale (block size in pixels) = 20
+
         max X (in blocks) = 10
+
         max Y (in blocks) = 20
+
         offset (in pixels) = 3
+
         """
         Frame.__init__(self, parent)
-        
-        # blocks are indexed by there corrdinates e.g. (4,5), these are
-        self.landed = {}
-        self.parent = parent
-        self.scale = scale
-        self.max_x = max_x
-        self.max_y = max_y
-        self.offset = offset
-        self.speedMultiplier = 1        
 
-        self.canvas = Canvas(parent,
-                             height=(max_y * scale)+offset, width= (max_x * scale)+offset)
-        
+
+        # blocks are indexed by there corrdinates e.g. (4,5), these are
+
+        self.landed = {}
+
+        self.parent = parent
+
+        self.scale = scale
+
+        self.max_x = max_x
+
+        self.max_y = max_y
+
+        self.offset = offset
+
+
+
         self.canvas = Canvas(parent, height=900, width=1440)
+
         self.canvas.pack()
-        self.canvas.create_rectangle(600, 80, 805, 545, fill = "grey")
+
+        self.canvas.create_rectangle(600,80,805,545, fill="grey")
 
     def check_for_complete_row( self, blocks ):
         """
@@ -187,7 +207,7 @@ class Board( Frame ):
         #self.output() # non-gui diagnostic
         
         # return the score, calculated by the number of rows deleted.  
-        if LIST[PRACTICE] == 3:
+        if LIST[SESSION] == 3:
             return (500 * rows_deleted) * rows_deleted # this happens only on the 3th session
         else:      
             return (100 * rows_deleted) * rows_deleted ### CHANGE THIS NUMBER TO INCREASE POINTS RATE- done and done
@@ -209,9 +229,10 @@ class Board( Frame ):
         """
         rx = (x * self.scale) + self.offset
         ry = (y * self.scale) + self.offset
-        
         return self.canvas.create_rectangle(
-            rx, ry, rx+self.scale, ry+self.scale, fill=colour
+
+            rx + 600, ry + 100, rx+self.scale+600, ry+self.scale+100, fill=colour
+
         )
         
     def move_block( self, id, coord):
@@ -438,7 +459,7 @@ class game_controller(object):
         self.parent = parent
         self.score = 0
         self.level = 0  #dependent on self.level, increase speed (make new file for this)
-        self.delay = 1000    #ms   # this lil piece of shit is the delay betwn piece moves (so, speed)
+        self.delay = 800    #ms   # this lil piece of shit is the delay betwn piece moves (so, speed)
         self.starttime = time.time() #use to track playtime
         self.endtime = 0
         self.totaltime = 0
@@ -486,30 +507,30 @@ class game_controller(object):
     def endGame(self):
         self.endtime = time.time()
         self.totaltime = self.endtime - self.starttime
-        global PRACTICE
-        PRACTICE += 1
-        #print(PRACTICE)
-        self.checkPractice()
+        global SESSION
+        SESSION += 1
+        #print(SESSION)
+        self.checkSESSION()
         Toplevel().destroy()
         self.parent.destroy()
-        if LIST[PRACTICE] == 6:
+        if LIST[SESSION] == 6:
             sys.exit()
         root = Tk()
         root.title("Tetris Tk")
         theGame = game_controller(root)
         root.mainloop()
 
-    def checkPractice(self):
-        global PRACTICE
+    def checkSESSION(self):
+        global SESSION
         self.checkIn()
 
-    def writeData(self, BOOK, SHEET, SHEETNAME, PRACTICE): #TODO: change this to use practice as an arg and translate that to the row # to write to
+    def writeData(self, BOOK, SHEET, SHEETNAME, SESSION): #TODO: change this to use SESSION as an arg and translate that to the row # to write to
         scoreNoSpeed = self.score
         levelNoSpeed = self.level
         timeNoSpeed = self.totaltime
         enjoyNoSpeed = self.enjoyNoSpeed
         subject_num = SUBJECT_NUM
-        excel_data.output.write_data_noSpeed(BOOK, SHEET, SHEETNAME, PRACTICE, subject_num, scoreNoSpeed,
+        excel_data.output.write_data_noSpeed(BOOK, SHEET, SHEETNAME, SESSION, subject_num, scoreNoSpeed,
                                              levelNoSpeed, enjoyNoSpeed, timeNoSpeed)
 
     def checkIn(self):
@@ -518,13 +539,13 @@ class game_controller(object):
                            parent=self.parent)
         self.enjoyNoSpeed = tkSimpleDialog.askinteger(title='Question', prompt="On a scale from 1 to 7 with 1 being not enjoyable at all, and 7 being as enjoyable as possible, how fun was this?")
         survey_ans = survey.survey.survey()
-        self.writeData(BOOK, SHEET,SHEETNAME, PRACTICE)
-        excel_data.survey_ans.write_survey_ans(BOOK, SHEET, SHEETNAME, survey_ans, PRACTICE)
+        self.writeData(BOOK, SHEET,SHEETNAME, SESSION)
+        excel_data.survey_ans.write_survey_ans(BOOK, SHEET, SHEETNAME, survey_ans, SESSION)
 
 
     def handle_move(self, direction):
         #this lil bit only for time capped trial
-        if LIST[PRACTICE] == 4:
+        if LIST[SESSION] == 4:
             if time.time()-self.starttime >= 120: #let play go for two minutes
                 self.endGame()
         #if you can't move then you've hit something
@@ -547,7 +568,7 @@ class game_controller(object):
                 if (self.level < NO_OF_LEVELS and 
                     self.score >= self.thresholds[ self.level]):
                     self.level+=1
-                    if LIST[PRACTICE] == 5:
+                    if LIST[SESSION] == 5:
                         #print("WE'RE SPEEDIN' UP")
                         self.delay-=100 #HERE HE IS RIGHT HERE LIL SHIT I FOUND U
                    
@@ -610,5 +631,9 @@ class game_controller(object):
 if __name__ == "__main__":
     root = Tk()
     root.title("Tetris Tk")
-    theGame = game_controller(root)
+    tkMessageBox.askquestion(
+            title = "New Game Ready!",
+            message = "Ready to start?",
+            type=tkMessageBox.OK)
+    theGame = game_controller(root) 
     root.mainloop()
