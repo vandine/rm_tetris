@@ -47,10 +47,10 @@ STATE2 = [1, 5, 2, 3, 4, 6]
 STATE3 = [1, 4, 5, 2, 3, 6]
 STATE4 = [1, 3, 4, 5, 3, 6]
 
-LIST= STATE2 #### CHANGE THIS TO DIFFERENT STATE FOR COUNTERBALANCING
-STRING_LIST= "STATE2"  ### DONT FORGET TO CHANGE THIS TOO
+LIST= STATE1 #### CHANGE THIS TO DIFFERENT STATE FOR COUNTERBALANCING
+STRING_LIST= "STATE1"  ### DONT FORGET TO CHANGE THIS TOO
 
-SUBJECT_NUM = 420.4  # CHANGE THIS FOR EVERY SUBJECT- format by birth month, birthday, decimal, state i.e.: 627.1
+SUBJECT_NUM = 420.1  # CHANGE THIS FOR EVERY SUBJECT- format by birth month, birthday, decimal, state i.e.: 627.1
 
 direction_d = { "left": (-1, 0), "right": (1, 0), "down": (0, 1) }
 (BOOK, SHEET, SHEETNAME) = excel_data.make_workbook.make_workbook(SUBJECT_NUM, STRING_LIST)
