@@ -1,8 +1,8 @@
 from xlwt import Workbook
 # create workbook in separate module, feed that workbook to this function!!!!!
 def write_data_noSpeed(BOOK, SHEET, SHEETNAME, PRACTICE,  subject_num, scoreNoSpeed, levelNoSpeed, enjoyNoSpeed, timeNoSpeed):
-
-    row = PRACTICE+1
+    print("xcel write recieved:" + str(PRACTICE))
+    row = PRACTICE
 
     def setData(scoreNoSpeed, levelNoSpeed, enjoyNoSpeed, timeNoSpeed):
         SHEET.write(row, 0, row)
@@ -13,4 +13,3 @@ def write_data_noSpeed(BOOK, SHEET, SHEETNAME, PRACTICE,  subject_num, scoreNoSp
     
     setData(scoreNoSpeed, levelNoSpeed, enjoyNoSpeed, timeNoSpeed) 
     BOOK.save(SHEETNAME)
-

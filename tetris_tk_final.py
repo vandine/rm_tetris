@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
 """
 Tetris Tk - A tetris clone written in Python using the Tkinter GUI library.
@@ -47,10 +47,10 @@ STATE2 = [1, 5, 2, 3, 4, 6]
 STATE3 = [1, 4, 5, 2, 3, 6]
 STATE4 = [1, 3, 4, 5, 2, 6]
 
-LIST= STATE1 #### CHANGE THIS TO DIFFERENT STATE FOR COUNTERBALANCING
-STRING_LIST= "STATE1"  ### DONT FORGET TO CHANGE THIS TOO
+LIST= STATE4 #### CHANGE THIS TO DIFFERENT STATE FOR COUNTERBALANCING
+STRING_LIST= "STATE4"  ### DONT FORGET TO CHANGE THIS TOO
 
-SUBJECT_NUM = 420  # CHANGE THIS FOR EVERY SUBJECT- format by birth month, birthday, decimal, state i.e.: 627.1
+SUBJECT_NUM = 618  # CHANGE THIS FOR EVERY SUBJECT- format by birth month, birthday, decimal, state i.e.: 627.1
 
 direction_d = { "left": (-1, 0), "right": (1, 0), "down": (0, 1) }
 (BOOK, SHEET, SHEETNAME) = excel_data.make_workbook.make_workbook(SUBJECT_NUM, STRING_LIST)
@@ -406,7 +406,7 @@ class square_shape( shape ):
         
     def rotate(self, clockwise=True):
         """
-        Override the rotate method for the square shape to do exactly nothing!
+        Override the rotate method for the square shape to do exactly nothingnot 
         """
         pass
         
@@ -530,26 +530,29 @@ class game_controller(object):
         timeNoSpeed = self.totaltime
         enjoyNoSpeed = self.enjoyNoSpeed
         subject_num = SUBJECT_NUM
+	print("Passign wrte_data session =" + str(SESSION))
         excel_data.output.write_data_noSpeed(BOOK, SHEET, SHEETNAME, SESSION, subject_num, scoreNoSpeed,
                                              levelNoSpeed, enjoyNoSpeed, timeNoSpeed)
 
     def checkIn(self):
         tkMessageBox.showwarning(title="SESSION ENDED",
-                                 message ="Score: %7d\tLevel: %d\n Ready to move on?" % ( self.score, self.level),
-                           parent=self.parent)
+                                 message ="Score: %7d\tLevel: %d\n Ready to move on?" % ( self.score, self.level), parent=self.parent)
         self.enjoyNoSpeed = tkSimpleDialog.askinteger(title='Question', prompt="On a scale from 1 to 7 with 1 being not enjoyable at all, and 7 being as enjoyable as possible, how fun was this?")
         survey_ans = survey.survey.survey()
         self.writeData(BOOK, SHEET,SHEETNAME, SESSION)
         excel_data.survey_ans.write_survey_ans(BOOK, SHEET, SHEETNAME, survey_ans, SESSION)
 
 
-    def handle_move(self, direction):
+    def handle_move(self, direction, from_key = False):
+	print("SESSION is:" +  str(SESSION))
         #this lil bit only for time capped trial
-        if time.time()-self.starttime>= 300:
+        if (time.time()-self.starttime>= 10 and not from_key):
             self.endGame()
-        if LIST[SESSION] == 4:
+            return
+        if (LIST[SESSION] == 4 and not from_key):
             if time.time()-self.starttime >= 120: #let play go for two minutes
                 self.endGame()
+		return
         #if you can't move then you've hit something
         if not self.shape.move( direction ):
  
@@ -563,9 +566,10 @@ class game_controller(object):
                 
                 # If the shape returned is None, then this indicates that
                 # that the check before creating it failed and the
-                # game is over!
+                # game is overnot 
                 if self.shape is None:
                    self.endGame()
+                   return
                 # do we go up a level?
                 if (self.level < NO_OF_LEVELS and 
                     self.score >= self.thresholds[ self.level]):
@@ -574,9 +578,7 @@ class game_controller(object):
                         #print("WE'RE SPEEDIN' UP")
                         self.delay-=100 #HERE HE IS RIGHT HERE LIL SHIT I FOUND U
                    
-                self.status_bar.set("Score: %-7d\t Level: %d " % (
-                    self.score, self.level+1)
-                )
+                self.status_bar.set("Score: %-7d\t Level: %d " %  (self.score, self.level+1))
                 
                 # Signal that the shape has 'landed'
                 return False
@@ -586,21 +588,21 @@ class game_controller(object):
 
     def left_callback(self, event):
         if self.shape:
-            self.handle_move( LEFT )
+            self.handle_move( LEFT, True )
         
     def right_callback( self, event ):
         if self.shape:
-            self.handle_move( RIGHT )
+            self.handle_move( RIGHT, True )
 
     def up_callback( self, event ):
         if self.shape:
             # drop the tetrominoe to the bottom
-            while self.handle_move( DOWN ):
+            while self.handle_move( DOWN, True ):
                 pass
 
     def down_callback( self, event ):
         if self.shape:
-            self.handle_move( DOWN )
+            self.handle_move( DOWN, True )
             
     def a_callback( self, event):
         if self.shape:
@@ -613,7 +615,7 @@ class game_controller(object):
     def p_callback(self, event):
         self.parent.after_cancel( self.after_id )
         tkMessageBox.askquestion(
-            title = "Paused!",
+            title = "Paused! ",
             message = "Continue?",
             type=tkMessageBox.OK)
         self.after_id = self.parent.after(self.delay,
@@ -633,9 +635,5 @@ class game_controller(object):
 if __name__ == "__main__":
     root = Tk()
     root.title("Tetris Tk")
-    tkMessageBox.askquestion(
-            title = "New Game Ready!",
-            message = "Ready to start?",
-            type=tkMessageBox.OK)
     theGame = game_controller(root) 
     root.mainloop()
